@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>African Voice Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#E05D14', // Orange - representing African sunset
+                            dark: '#C24A00',
+                        },
+                        secondary: {
+                            DEFAULT: '#2A9D8F', // Teal - representing African nature
+                            dark: '#227C71',
+                        },
+                        accent: {
+                            DEFAULT: '#F9C74F', // Yellow - representing African sun
+                            dark: '#DCA92D',
+                        },
+                        darkbg: '#1F1F1F',
+                    },
+                    fontFamily: {
+                        'sans': ['Poppins', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        .chat-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            height: 12px;
+            width: 12px;
+        }
+        
+        .user-bubble::before {
+            right: -6px;
+            border-radius: 0 0 0 20px;
+            background: linear-gradient(135deg, var(--tw-gradient-stops));
+        }
+        
+        .bot-bubble::before {
+            left: -6px;
+            border-radius: 0 0 20px 0;
+            background: linear-gradient(225deg, var(--tw-gradient-stops));
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        /* African pattern-inspired background */
+        .pattern-bg {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e05d14' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .dark .pattern-bg {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e05d14' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body class="font-sans transition-colors duration-200 bg-gray-50 dark:bg-darkbg min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-3xl">
+        <!-- Header -->
+        <div class="mb-6 text-center">
+            <h1 class="text-3xl font-bold text-primary dark:text-primary mb-2">Nzelu AI</h1>
+            <p class="text-gray-600 dark:text-gray-300">
+                <span class="bemba">Twalishani (Bemba)</span> | 
+                <span class="nyanja">Muli bwanji (Nyanja)</span>
+            </p>
+        </div>
+        
+        <!-- Settings Bar -->
+        <div class="bg-white dark:bg-gray-800 rounded-t-lg shadow-md p-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-700 dark:text-gray-200">Language:</span>
+                <select id="languageSelect" class="bg-gray-100 dark:bg-gray-700 rounded py-1 px-3 text-gray-800 dark:text-gray-200 border-none focus:ring-2 focus:ring-primary">
+                    <option value="bemba">Bemba</option>
+                    <option value="nyanja">Nyanja</option>
+                    <option value="english">English</option>
+                </select>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <button id="helpButton" class="p-2 rounded-full bg-accent text-white hover:bg-accent-dark" title="Voice Commands Help">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </button>
+                
+                <button id="themeToggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Chat Messages -->
+        <div id="chatContainer" class="bg-white dark:bg-gray-800 overflow-y-auto pattern-bg h-96 p-4 flex flex-col space-y-4 shadow-inner">
+            <!-- Welcome message -->
+            <div class="flex flex-col">
+                <div class="chat-bubble bot-bubble relative bg-gradient-to-br from-secondary to-secondary-dark text-white p-3 rounded-lg rounded-tl-none max-w-3/4 self-start shadow-md">
+                    <div class="font-medium mb-1">Nzelu AI</div>
+                    <p>👋 Welcome! I can chat in Bemba, Nyanja, or English. How can I help you today?</p>
+                </div>
+                <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-2">Nzelu AI</span>
+            </div>
+        </div>
+        
+        <!-- Input Area -->
+        <div class="bg-white dark:bg-gray-800 rounded-b-lg shadow-md p-4">
+            <div class="flex items-center">
+                <textarea 
+                    id="userInput" 
+                    rows="1"
+                    class="flex-1 bg-gray-100 dark:bg-gray-700 border-none rounded-lg py-3 px-4 text-gray-800 dark:text-gray-200 text-base resize-none focus:ring-2 focus:ring-primary"
+                    placeholder="Type your message here..."
+                ></textarea>
+                <button 
+                    id="micButton" 
+                    class="ml-3 bg-secondary hover:bg-secondary-dark dark:bg-secondary dark:hover:bg-secondary-dark text-white rounded-full w-12 h-12 flex items-center justify-center transition-colors duration-200"
+                    title="Voice input"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                </button>
+                <button 
+                    id="sendButton" 
+                    class="ml-3 bg-primary hover:bg-primary-dark dark:bg-primary dark:hover:bg-primary-dark text-white rounded-full w-12 h-12 flex items-center justify-center transition-colors duration-200"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Help Text -->
+        <div class="mt-4 text-sm text-gray-600 dark:text-gray-400 text-center">
+            <p>You can ask questions in Bemba, Nyanja, or English.</p>
+            <p class="text-xs mt-2">Powered by Claude-3.7-Sonnet</p>
+        </div>
+    </div>
+    
+    <script>
+        // Dark mode detection and toggle
+        function initDarkMode() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+            
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+                if (event.matches) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            });
+            
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+            });
+        }
+        
+        // Auto-resize textarea
+        function initTextarea() {
+            const textarea = document.getElementById('userInput');
+            
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                
+                // Reset height if empty
+                if (this.value === '') {
+                    this.style.height = 'auto';
+                }
+            });
+            
+            // Enter to send, Shift+Enter for new line
+            textarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    document.getElementById('sendButton').click();
+                }
+            });
+        }
+        
+        // Chat functionality
+        function initChat() {
+            const chatContainer = document.getElementById('chatContainer');
+            const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            const languageSelect = document.getElementById('languageSelect');
+            
+            let isProcessing = false;
+            const handlerId = "chat-response-handler";
+            
+            // Register handler for bot responses
+            window.Poe.registerHandler(handlerId, (result) => {
+                const loadingBubble = document.querySelector('.loading-bubble');
+                if (loadingBubble) {
+                    loadingBubble.remove();
+                }
+                
+                isProcessing = false;
+                
+                const response = result.responses[0];
+                if (response.status === "error") {
+                    addMessage("Sorry, there was an error processing your request. Please try again.", "bot");
+                    return;
+                }
+                
+                // Add message content
+                if (response.status === "complete" || response.status === "incomplete") {
+                    const existingBubble = document.getElementById('current-response');
+                    if (existingBubble) {
+                        const messageText = existingBubble.querySelector('p');
+                        messageText.innerHTML = response.content || "Sorry, I couldn't generate a response.";
+                        
+                        if (response.status === "complete") {
+                            existingBubble.id = ''; // Remove the ID once complete
+                        }
+                    } else {
+                        addMessageWithId(response.content || "Sorry, I couldn't generate a response.", "bot", 
+                            response.status === "incomplete" ? "current-response" : "");
+                    }
+                }
+                
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            });
+            
+            // Add message to the chat
+            function addMessage(message, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'flex flex-col';
+                
+                if (sender === 'user') {
+                    messageDiv.innerHTML = `
+                        <div class="chat-bubble user-bubble relative bg-gradient-to-br from-primary to-primary-dark text-white p-3 rounded-lg rounded-tr-none max-w-3/4 self-end shadow-md">
+                            <div class="font-medium mb-1">You</div>
+                            <p>${message}</p>
+                        </div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 mr-2 self-end">You</span>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="chat-bubble bot-bubble relative bg-gradient-to-br from-secondary to-secondary-dark text-white p-3 rounded-lg rounded-tl-none max-w-3/4 self-start shadow-md group">
+                            <div class="font-medium mb-1 flex justify-between items-center">
+                                <span>Nzelu AI</span>
+                                <button class="speak-button opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-accent hover:bg-accent-dark text-white rounded-full p-1 ml-2" title="Listen to response">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.536a5 5 0 001.414-7.072m-2.828 9.9a9 9 0 010-12.728" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p>${message}</p>
+                            <div class="audio-player mt-2 hidden"></div>
+                        </div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-2">Nzelu AI</span>
+                    `;
+                    
+                    // Add event listener to the speak button
+                    setTimeout(() => {
+                        const speakButton = messageDiv.querySelector('.speak-button');
+                        if (speakButton) {
+                            speakButton.addEventListener('click', function() {
+                                const textToSpeak = this.closest('.chat-bubble').querySelector('p').textContent;
+                                const audioPlayer = this.closest('.chat-bubble').querySelector('.audio-player');
+                                const language = languageSelect.value;
+                                speakText(textToSpeak, audioPlayer, language);
+                            });
+                        }
+                    }, 0);
+                }
+                
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            // Add message with custom ID
+            function addMessageWithId(message, sender, id) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'flex flex-col';
+                
+                if (sender === 'user') {
+                    messageDiv.innerHTML = `
+                        <div id="${id}" class="chat-bubble user-bubble relative bg-gradient-to-br from-primary to-primary-dark text-white p-3 rounded-lg rounded-tr-none max-w-3/4 self-end shadow-md">
+                            <div class="font-medium mb-1">You</div>
+                            <p>${message}</p>
+                        </div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 mr-2 self-end">You</span>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div id="${id}" class="chat-bubble bot-bubble relative bg-gradient-to-br from-secondary to-secondary-dark text-white p-3 rounded-lg rounded-tl-none max-w-3/4 self-start shadow-md group">
+                            <div class="font-medium mb-1 flex justify-between items-center">
+                                <span>Nzelu AI</span>
+                                <button class="speak-button opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-accent hover:bg-accent-dark text-white rounded-full p-1 ml-2" title="Listen to response">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.536a5 5 0 001.414-7.072m-2.828 9.9a9 9 0 010-12.728" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p>${message}</p>
+                            <div class="audio-player mt-2 hidden"></div>
+                        </div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-2">Nzelu AI</span>
+                    `;
+                    
+                    // Add event listener to the speak button
+                    setTimeout(() => {
+                        const speakButton = messageDiv.querySelector('.speak-button');
+                        if (speakButton) {
+                            speakButton.addEventListener('click', function() {
+                                const textToSpeak = this.closest('.chat-bubble').querySelector('p').textContent;
+                                const audioPlayer = this.closest('.chat-bubble').querySelector('.audio-player');
+                                const language = languageSelect.value;
+                                speakText(textToSpeak, audioPlayer, language);
+                            });
+                        }
+                    }, 0);
+                }
+                
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            // Add loading message
+            function addLoadingMessage() {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'flex flex-col loading-bubble';
+                
+                loadingDiv.innerHTML = `
+                    <div class="chat-bubble bot-bubble relative bg-gradient-to-br from-secondary to-secondary-dark text-white p-3 rounded-lg rounded-tl-none max-w-3/4 self-start shadow-md">
+                        <div class="font-medium mb-1">Nzelu AI</div>
+                        <p class="flex items-center">
+                            <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Thinking...
+                        </p>
+                    </div>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-2">Nzelu AI</span>
+                `;
+                
+                chatContainer.appendChild(loadingDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            // Send message
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (message === '' || isProcessing) return;
+                
+                // Add user message to chat
+                addMessage(message, 'user');
+                
+                // Clear input
+                userInput.value = '';
+                userInput.style.height = 'auto';
+                
+                // Show loading message
+                addLoadingMessage();
+                
+                isProcessing = true;
+                
+                // Get selected language
+                const language = languageSelect.value;
+                
+                // Create system prompt with language instruction
+                let prompt = "@Claude-3.7-Sonnet ";
+                
+                switch(language) {
+                    case 'bemba':
+                        prompt += "Please respond in Bemba language with an authentic African voice. If you don't understand the message in Bemba, politely explain in Bemba that you didn't understand and ask for clarification. Here's the user's message: " + message;
+                        break;
+                    case 'nyanja':
+                        prompt += "Please respond in Nyanja/Chichewa language with an authentic African voice. If you don't understand the message in Nyanja, politely explain in Nyanja that you didn't understand and ask for clarification. Here's the user's message: " + message;
+                        break;
+                    default:
+                        prompt += "Please respond in English with an authentic African voice. Here's the user's message: " + message;
+                }
+                
+                try {
+                    await window.Poe.sendUserMessage(prompt, {
+                        handler: handlerId,
+                        stream: true,
+                        openChat: false
+                    });
+                } catch (err) {
+                    console.error("Error sending message:", err);
+                    isProcessing = false;
+                    const loadingBubble = document.querySelector('.loading-bubble');
+                    if (loadingBubble) {
+                        loadingBubble.remove();
+                    }
+                    
+                    addMessage("Sorry, there was an error sending your message. Please try again.", "bot");
+                }
+            }
+            
+            // Event listeners
+            sendButton.addEventListener('click', sendMessage);
+        }
+        
+        // Voice input functionality
+        function initVoiceInput() {
+            const micButton = document.getElementById('micButton');
+            const userInput = document.getElementById('userInput');
+            
+            // Check if SpeechRecognition is available
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                console.log('Speech recognition not supported');
+                micButton.style.display = 'none';
+                return;
+            }
+            
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            
+            // Set language based on the selected option
+            function updateRecognitionLanguage() {
+                const language = document.getElementById('languageSelect').value;
+                switch(language) {
+                    case 'bemba':
+                        // Fallback to English if Bemba is not available
+                        recognition.lang = 'en-US';
+                        break;
+                    case 'nyanja':
+                        // Fallback to English if Nyanja is not available
+                        recognition.lang = 'en-US';
+                        break;
+                    default:
+                        recognition.lang = 'en-US';
+                }
+            }
+            
+            let isListening = false;
+            
+            micButton.addEventListener('click', () => {
+                if (isListening) {
+                    recognition.stop();
+                    return;
+                }
+                
+                updateRecognitionLanguage();
+                recognition.start();
+                isListening = true;
+                
+                micButton.classList.add('bg-accent');
+                micButton.classList.remove('bg-secondary');
+                micButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                `;
+            });
+            
+            // Process voice commands
+            function processVoiceCommand(transcript) {
+                const lowerTranscript = transcript.toLowerCase().trim();
+                
+                // Define voice commands
+                const commands = {
+                    'clear chat': () => {
+                        // Clear all messages except the welcome message
+                        const chatContainer = document.getElementById('chatContainer');
+                        const firstMessage = chatContainer.firstElementChild;
+                        chatContainer.innerHTML = '';
+                        if (firstMessage) {
+                            chatContainer.appendChild(firstMessage);
+                        }
+                        return true;
+                    },
+                    'change language to bemba': () => {
+                        document.getElementById('languageSelect').value = 'bemba';
+                        addMessage("Language changed to Bemba", "bot");
+                        return true;
+                    },
+                    'change language to nyanja': () => {
+                        document.getElementById('languageSelect').value = 'nyanja';
+                        addMessage("Language changed to Nyanja", "bot");
+                        return true;
+                    },
+                    'change language to english': () => {
+                        document.getElementById('languageSelect').value = 'english';
+                        addMessage("Language changed to English", "bot");
+                        return true;
+                    },
+                    'switch to dark mode': () => {
+                        document.documentElement.classList.add('dark');
+                        addMessage("Dark mode activated", "bot");
+                        return true;
+                    },
+                    'switch to light mode': () => {
+                        document.documentElement.classList.remove('dark');
+                        addMessage("Light mode activated", "bot");
+                        return true;
+                    },
+                    'help': () => {
+                        const helpText = `
+                            <strong>Voice Commands:</strong><br>
+                            - "Clear chat": Clears the conversation<br>
+                            - "Change language to [Bemba/Nyanja/English]": Switches language<br>
+                            - "Switch to [dark/light] mode": Changes theme<br>
+                            - "Help": Shows this help message
+                        `;
+                        addMessage(helpText, "bot");
+                        return true;
+                    }
+                };
+                
+                // Check if input matches any command
+                for (const [cmdText, cmdFunc] of Object.entries(commands)) {
+                    if (lowerTranscript.includes(cmdText)) {
+                        return cmdFunc();
+                    }
+                }
+                
+                // No command found
+                return false;
+            }
+            
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0])
+                    .map(result => result.transcript)
+                    .join('');
+                
+                // Check if this is a voice command
+                const isCommand = processVoiceCommand(transcript);
+                
+                // If not a command, treat as regular input
+                if (!isCommand) {
+                    userInput.value = transcript;
+                    userInput.style.height = 'auto';
+                    userInput.style.height = (userInput.scrollHeight) + 'px';
+                }
+            };
+            
+            recognition.onend = () => {
+                isListening = false;
+                micButton.classList.remove('bg-accent');
+                micButton.classList.add('bg-secondary');
+                micButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                `;
+            };
+            
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error', event.error);
+                isListening = false;
+                micButton.classList.remove('bg-accent');
+                micButton.classList.add('bg-secondary');
+                micButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                `;
+            };
+            
+            // Update language when language selection changes
+            document.getElementById('languageSelect').addEventListener('change', updateRecognitionLanguage);
+        }
+        
+        // Voice output functionality using ElevenLabs
+        async function speakText(text, audioPlayerElement, language) {
+            if (!audioPlayerElement) return;
+            
+            // Show loading state in the audio player
+            audioPlayerElement.innerHTML = `
+                <div class="flex items-center justify-center py-2">
+                    <svg class="animate-spin h-5 w-5 mr-2 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-xs text-white">Generating audio...</span>
+                </div>
+            `;
+            audioPlayerElement.classList.remove('hidden');
+            
+            // Always use an African-accented voice for authentic experience
+            // Using "George" which has a more distinct African accent (similar to Kenyan/Ghanaian)
+            let voiceOption = ' --voice George';
+            
+            const ttsHandlerId = "tts-handler-" + Date.now();
+            
+            // Register handler for TTS response
+            window.Poe.registerHandler(ttsHandlerId, (result) => {
+                const response = result.responses[0];
+                
+                if (response.status === "error") {
+                    audioPlayerElement.innerHTML = `
+                        <div class="text-xs text-red-500 py-2">
+                            Error generating audio. Please try again.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                if (response.status === "complete") {
+                    if (response.attachments && response.attachments.length > 0) {
+                        const audioAttachment = response.attachments[0];
+                        audioPlayerElement.innerHTML = `
+                            <audio controls class="w-full h-8 my-1">
+                                <source src="${audioAttachment.url}" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                        `;
+                        
+                        // Auto-play the audio
+                        const audioElement = audioPlayerElement.querySelector('audio');
+                        if (audioElement) {
+                            audioElement.play();
+                        }
+                    } else {
+                        audioPlayerElement.innerHTML = `
+                            <div class="text-xs text-red-500 py-2">
+                                No audio was generated. Please try again.
+                            </div>
+                        `;
+                    }
+                }
+            });
+            
+            try {
+                await window.Poe.sendUserMessage(`@ElevenLabs ${text}${voiceOption}`, {
+                    handler: ttsHandlerId,
+                    stream: false,
+                    openChat: false
+                });
+            } catch (err) {
+                console.error("Error generating speech:", err);
+                audioPlayerElement.innerHTML = `
+                    <div class="text-xs text-red-500 py-2">
+                        Error generating audio: ${err.message || "Unknown error"}
+                    </div>
+                `;
+            }
+        }
+        
+        // Initialize help button
+        function initHelpButton() {
+            const helpButton = document.getElementById('helpButton');
+            
+            helpButton.addEventListener('click', () => {
+                const helpText = `
+                    <strong>Voice Commands:</strong><br>
+                    - "Clear chat": Clears the conversation<br>
+                    - "Change language to [Bemba/Nyanja/English]": Switches language<br>
+                    - "Switch to [dark/light] mode": Changes theme<br>
+                    - "Help": Shows this help message<br><br>
+                    <strong>How to use voice input:</strong><br>
+                    1. Click the microphone button (turns yellow when active)<br>
+                    2. Speak clearly<br>
+                    3. The recording stops automatically when you pause<br>
+                    4. Detected speech appears in the input box<br>
+                    5. Click send or say a voice command
+                `;
+                
+                // Get the addMessage function from the chat module
+                const chatModule = document.querySelector('#chatContainer');
+                if (chatModule && typeof addMessage === 'function') {
+                    addMessage(helpText, "bot");
+                }
+            });
+        }
+        
+        // Initialize components
+        document.addEventListener('DOMContentLoaded', () => {
+            initDarkMode();
+            initTextarea();
+            initChat();
+            initVoiceInput();
+            initHelpButton();
+            
+            // Update welcome message to mention voice commands
+            setTimeout(() => {
+                const welcomeMessage = document.querySelector('#chatContainer .chat-bubble p');
+                if (welcomeMessage) {
+                    welcomeMessage.innerHTML = '👋 Welcome! I can chat in Bemba, Nyanja, or English. Use the microphone for voice input or try saying "help" for voice commands.';
+                }
+            }, 100);
+            
+            // Auto-scroll to bottom on load
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        });
+    </script>
+</body>
+</html>
